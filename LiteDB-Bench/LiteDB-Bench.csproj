@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="7.0.4" />
+    <PackageReference Include="Spectre.Console" Version="0.46.0" />
     <PackageReference Include="SQLitePCLRaw.bundle_e_sqlcipher" Version="2.1.4" />
   </ItemGroup>
 
@@ -17,6 +18,19 @@
     <Reference Include="LiteDB">
       <HintPath>..\References\LiteDB-v5.0.16\LiteDB.dll</HintPath>
     </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+	  <Using Include="LiteDB" />
+	  <Using Include="Program">
+	    <Static>True</Static>
+	  </Using>
+	  <Using Include="System.Data" />
+	  <Using Include="Microsoft.Data.Sqlite" />
+	  <Using Include="Spectre.Console" />
+	  <Using Include="System.Diagnostics" />
+	  <Using Include="System.Text" />
+	  <Using Include="System.Globalization"/>
   </ItemGroup>
 
 </Project>

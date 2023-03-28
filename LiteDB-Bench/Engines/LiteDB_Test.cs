@@ -1,70 +1,71 @@
-﻿using LiteDB;
-
-namespace LiteDB_Bench
+﻿class LiteDB_Test : ITest
 {
-    public class LiteDB_Test : ITest
+    private string _filename;
+    private LiteDatabase _db;
+    private ILiteCollection<BsonDocument> _col;
+    private ILiteCollection<BsonDocument> _colBulk;
+    public int FileLength { get { _db.Checkpoint(); return (int)new FileInfo(_filename).Length; } }
+
+    public LiteDB_Test()
     {
-        private string _filename;
-        private LiteDatabase _db;
-        private ILiteCollection<BsonDocument> _col;
-        private ILiteCollection<BsonDocument> _colBulk;
-        private int _count;
+        _filename = "litedb-" + Guid.NewGuid().ToString("n") + ".db";
 
-        public int Count => _count;
-        public int FileLength { get { _db.Checkpoint(); return (int)new FileInfo(_filename).Length; } }
+        _db = new LiteDatabase(new ConnectionString { Filename = _filename });
+        _col = _db.GetCollection("col");
+        _colBulk = _db.GetCollection("col_bulk");
+    }
 
-        public LiteDB_Test(int count, string? password = null)
+    public void Prepare()
+    {
+    }
+
+    public void Insert(ProgressTask progress)
+    {
+        foreach (var doc in Helper.GetDocs(COUNT))
         {
-            _count = count;
-            _filename = "litedb-" + Guid.NewGuid().ToString("n") + ".db";
+            _col.Insert(doc);
 
-            _db = new LiteDatabase(new ConnectionString { Filename = _filename, Password = password });
-            _col = _db.GetCollection("col");
-            _colBulk = _db.GetCollection("col_bulk");
+            progress.Increment(1);
         }
+    }
 
-        public void Prepare()
+    public void Bulk(ProgressTask progress)
+    {
+        _colBulk.Insert(Helper.GetDocs(COUNT));
+
+        progress.Increment(COUNT);
+    }
+
+    public void Update(ProgressTask progress)
+    {
+        foreach (var doc in Helper.GetDocs(COUNT))
         {
-        }
+            _col.Update(doc);
 
-        public void Insert()
-        {
-            foreach (var doc in Helper.GetDocs(_count))
-            {
-                _col.Insert(doc);
-            }
+            progress.Increment(1);
         }
+    }
 
-        public void Bulk()
+    public void Query(ProgressTask progress)
+    {
+        for (var i = 1; i <= COUNT; i++)
         {
-            _colBulk.Insert(Helper.GetDocs(_count));
-        }
+            _col.FindById(i);
 
-        public void Update()
-        {
-            foreach (var doc in Helper.GetDocs(_count))
-            {
-                _col.Update(doc);
-            }
+            progress.Increment(1);
         }
+    }
 
-        public void Query()
-        {
-            for (var i = 1; i <= _count; i++)
-            {
-                _col.FindById(i);
-            }
-        }
+    public void Delete(ProgressTask progress)
+    {
+        _col.DeleteAll();
 
-        public void Delete()
-        {
-            _col.DeleteAll();
-        }
+        progress.Increment(COUNT);
+    }
 
-        public void Dispose()
-        {
-            _db.Dispose();
-            File.Delete(_filename);
-        }
+    public void Dispose()
+    {
+        _db.Dispose();
+        //File.Delete(_filename);
     }
 }

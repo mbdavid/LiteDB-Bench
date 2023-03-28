@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "LiteDB-Bench": {
+      "commandName": "Project",
+      "commandLineArgs": "10000"
+    }
+  }
+}

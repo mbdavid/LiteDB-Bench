@@ -1,56 +1,129 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using LiteDB;
-using LiteDB_Bench;
-
-namespace LiteDB_Bench
+﻿class Program
 {
-    class Program
+    public static int COUNT = 10;
+
+    static void Main(string[] args)
     {
-        static void Main(string[] args)
+        if (args.Length != 1)
         {
-            if (args.Length != 1)
-            {
-                Console.WriteLine("usage: dotnet run <count>");
-                return;
-            }
-
-            int count = Convert.ToInt32(args[0]);
-
-            RunTest("LiteDB: default", new LiteDB_Test(count, null));
-            RunTest("LiteDB: encrypted", new LiteDB_Test(count, "mypass"));
-
-            RunTest("SQLite: default", new SQLite_Test(count, null));
-            RunTest("SQLite: encrypted", new SQLite_Test(count, "mypass"));
-
-            Console.ReadKey();
+            Console.WriteLine("usage: dotnet run <count>");
+            return;
         }
 
-        static void RunTest(string name, ITest test)
+        Thread.CurrentThread.CurrentCulture = new CultureInfo("pt-BR");
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo("pt-BR");
+
+        COUNT = Convert.ToInt32(args[0]);
+
+        AnsiConsole.Markup($"[bold teal]Embedded Database Performance Benchmark - {COUNT} documents[/]\n");
+        AnsiConsole.Markup($"[bold teal]===========================================================[/]\n\n");
+
+        // LiteDB
+        var litedbTest = new LiteDB_Test();
+        var litedbResult = new Results();
+
+        RunTest("LiteDB", litedbTest, litedbResult);
+
+        // SQLite
+        var sqliteTest = new SQLite_Test();
+        var sqliteResult = new Results();
+
+        RunTest("SQLite", sqliteTest, sqliteResult);
+
+        var table = new Table()
+            .AddColumn("Database")
+            .AddColumn("Insert", c => c.Alignment = Justify.Right)
+            .AddColumn("Bulk", c => c.Alignment = Justify.Right)
+            .AddColumn("Update", c => c.Alignment = Justify.Right)
+            .AddColumn("Query", c => c.Alignment = Justify.Right)
+            .AddColumn("Delete", c => c.Alignment = Justify.Right)
+            .AddColumn("Size", c => c.Alignment = Justify.Right);
+
+        AddRow(table, "LiteDB", litedbResult, sqliteResult);
+        AddRow(table, "SQLite", sqliteResult, litedbResult);
+
+        AnsiConsole.Write(table);
+
+        Console.ReadKey();
+    }
+
+    static void AddRow(Table table, string name, Results results, Results other)
+    {
+        table.AddRow(new Text(name),
+            AddText(results.Insert, other.Insert),
+            AddText(results.Bulk, other.Bulk),
+            AddText(results.Update, other.Update),
+            AddText(results.Query, other.Query),
+            AddText(results.Delete, other.Delete),
+            new Text(results.SizeFormatted()));
+    }
+
+    static Markup AddText(TimeSpan result, TimeSpan other)
+    {
+        var color = result > other ? "red" : "green";
+
+        return new Markup($"[{color}]{result.TotalMilliseconds:0,0} ms[/]");
+    }
+
+    static void RunTest(string name, ITest test, Results results)
+    {
+        try
         {
-            var title = name + " - " + test.Count + " records";
-            Console.WriteLine(title);
-            Console.WriteLine("=".PadLeft(title.Length, '='));
+            test.Prepare();
 
-            using (test)
-            {
-                test.Prepare();
+            AnsiConsole.Markup($"[bold fuchsia]{name}[/]\n");
+            AnsiConsole.Markup($"[bold fuchsia]{"".PadLeft(name.Length, '=')}[/]\n");
 
-                test.Run("Insert", test.Insert);
-                test.Run("Bulk", test.Bulk);
-                test.Run("Update", test.Update);
-                test.Run("Query", test.Query);
-                test.Run("Delete", test.Delete);
+            AnsiConsole.Progress()
+                .AutoRefresh(true) // Turn off auto refresh
+                .AutoClear(false)   // Do not remove the task list when done
+                .HideCompleted(false)   // Hide tasks as they are completed
+                .Columns(new ProgressColumn[]
+                {
+                    new TaskDescriptionColumn(),
+                    new ProgressBarColumn(),
+                    new PercentageColumn(),
+                    new MyElapsedTimeColumn(),
+                    new SpinnerColumn(),
+                }).Start(ctx =>
+                {
+                    // Define tasks
+                    var tInsert = ctx.AddTask("[silver] Insert[/]", false, COUNT);
+                    var tBulk = ctx.AddTask("[silver] Bulk[/]", false, COUNT);
+                    var tUpdate = ctx.AddTask("[silver] Update[/]", false, COUNT);
+                    var tQuery = ctx.AddTask("[silver] Query[/]", false, COUNT);
+                    var tDelete = ctx.AddTask("[silver] Delete[/]", false, COUNT);
 
-                Console.WriteLine("FileLength     : " + Math.Round((double)test.FileLength / (double)1024, 2).ToString().PadLeft(5, ' ') + " kb");
-            }
+                    RunTask("Insert", tInsert, test.Insert);
+                    RunTask("Bulk", tBulk, test.Bulk);
+                    RunTask("Update", tUpdate, test.Update);
+                    RunTask("Query", tQuery, test.Query);
+                    RunTask("Delete", tDelete, test.Delete);
 
-            Console.WriteLine();
+                    results.Insert = tInsert.ElapsedTime!.Value;
+                    results.Bulk = tBulk.ElapsedTime!.Value;
+                    results.Update= tUpdate.ElapsedTime!.Value;
+                    results.Query = tQuery.ElapsedTime!.Value;
+                    results.Delete = tDelete.ElapsedTime!.Value;
+                    results.Size = test.FileLength;
+
+                });
 
         }
+        finally
+        {
+            test.Dispose();
+        }
+    }
+
+    static void RunTask(string name, ProgressTask progress, Action<ProgressTask> action)
+    {
+        progress.Description($"[yellow] {name}[/]");
+        progress.StartTask();
+
+        action(progress);
+
+        progress.Description($"[silver] {name}[/]");
+        progress.StopTask();
     }
 }

@@ -1,17 +1,11 @@
-﻿namespace LiteDB_Bench
+﻿interface ITest : IDisposable
 {
-    public interface ITest : IDisposable
-    {
-        int Count { get; }
-        int FileLength { get; }
+    int FileLength { get; }
 
-        void Prepare();
-        void Insert();
-        void Bulk();
-        void Update();
-        //void CreateIndex();
-        void Query();
-        void Delete();
-        //void Drop();
-    }
+    void Prepare();
+    void Insert(ProgressTask progress);
+    void Bulk(ProgressTask progress);
+    void Update(ProgressTask progress);
+    void Query(ProgressTask progress);
+    void Delete(ProgressTask progress);
 }
