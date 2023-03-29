@@ -8,7 +8,6 @@
     {
         _filename = "sqlite-" + Guid.NewGuid().ToString("n") + ".db";
         var cs = "Data Source=" + _filename;
-        cs += ";Pooling=false";
 
         _db = new SqliteConnection(cs);
 

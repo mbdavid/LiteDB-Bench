@@ -20,17 +20,19 @@
         AnsiConsole.Markup($"[bold teal]Embedded Database Performance Benchmark[/]\n");
         AnsiConsole.Markup($"[bold teal]=======================================[/]\n\n");
 
+        // SQLite
+        var sqliteTest = new SQLite_Test();
+        var sqliteResult = new Results();
+
+        RunTest($"SQLite ({COUNT:0,0} rows)", sqliteTest, sqliteResult);
+
         // LiteDB
         var litedbTest = new LiteDB_Test();
         var litedbResult = new Results();
 
         RunTest($"LiteDB ({COUNT:0,0} documents)", litedbTest, litedbResult);
 
-        // SQLite
-        var sqliteTest = new SQLite_Test();
-        var sqliteResult = new Results();
-
-        RunTest($"SQLite ({COUNT:0,0} rows)", sqliteTest, sqliteResult);
+        // Results
 
         var table = new Table()
             .AddColumn("Database")
@@ -41,8 +43,8 @@
             .AddColumn("Delete", c => c.Alignment = Justify.Right)
             .AddColumn("Size", c => c.Alignment = Justify.Right);
 
-        AddRow(table, "LiteDB", litedbResult, sqliteResult);
         AddRow(table, "SQLite", sqliteResult, litedbResult);
+        AddRow(table, "LiteDB", litedbResult, sqliteResult);
 
         AnsiConsole.Write(table);
     }
