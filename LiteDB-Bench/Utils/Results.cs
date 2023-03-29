@@ -1,10 +1,10 @@
 ﻿class Results
 {
-    public TimeSpan Insert;
-    public TimeSpan Bulk;
-    public TimeSpan Update;
-    public TimeSpan Query;
-    public TimeSpan Delete;
+    public TimeSpan Insert = TimeSpan.MaxValue;
+    public TimeSpan Bulk = TimeSpan.MaxValue;
+    public TimeSpan Update = TimeSpan.MaxValue;
+    public TimeSpan Query = TimeSpan.MaxValue;
+    public TimeSpan Delete = TimeSpan.MaxValue;
 
     public long Size;
 

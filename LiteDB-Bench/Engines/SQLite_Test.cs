@@ -25,7 +25,7 @@
         table2.ExecuteNonQuery();
     }
 
-    public void Insert(ProgressTask progress)
+    public bool Insert(ProgressTask progress)
     {
         foreach (var doc in Helper.GetDocs(COUNT))
         {
@@ -42,10 +42,14 @@
             cmd.ExecuteNonQuery();
 
             progress.Increment(1);
+
+            if (Console.KeyAvailable && Console.ReadKey(true).Key == ConsoleKey.Escape) return false;
         }
+
+        return true;
     }
 
-    public void Bulk(ProgressTask progress)
+    public bool Bulk(ProgressTask progress)
     {
         using var trans = _db.BeginTransaction();
 
@@ -64,12 +68,16 @@
             cmd.ExecuteNonQuery();
 
             progress.Increment(1);
+
+            if (Console.KeyAvailable && Console.ReadKey(true).Key == ConsoleKey.Escape) return false;
         }
 
         trans.Commit();
+
+        return true;
     }
 
-    public void Update(ProgressTask progress)
+    public bool Update(ProgressTask progress)
     {
         foreach (var doc in Helper.GetDocs(COUNT))
         {
@@ -87,9 +95,11 @@
 
             progress.Increment(1);
         }
+
+        return true;
     }
 
-    public void Query(ProgressTask progress)
+    public bool Query(ProgressTask progress)
     {
         for (var i = 1; i <= COUNT; i++)
         {
@@ -110,9 +120,11 @@
 
             progress.Increment(1);
         }
+
+        return true;
     }
 
-    public void Delete(ProgressTask progress)
+    public bool Delete(ProgressTask progress)
     {
         var cmd = new SqliteCommand("DELETE FROM col", _db);
 
@@ -120,6 +132,7 @@
 
         progress.Increment(COUNT);
 
+        return true;
     }
 
     public void Dispose()
@@ -127,6 +140,12 @@
         _db.Close();
         _db.Dispose();
 
-        File.Delete(_filename);
+        try
+        {
+            File.Delete(_filename);
+        }
+        catch
+        {
+        }
     }
 }

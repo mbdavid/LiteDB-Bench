@@ -19,48 +19,64 @@
     {
     }
 
-    public void Insert(ProgressTask progress)
+    public bool Insert(ProgressTask progress)
     {
         foreach (var doc in Helper.GetDocs(COUNT))
         {
             _col.Insert(doc);
 
             progress.Increment(1);
+
+            if (Console.KeyAvailable && Console.ReadKey(true).Key == ConsoleKey.Escape) return false;
         }
+
+        return true;
     }
 
-    public void Bulk(ProgressTask progress)
+    public bool Bulk(ProgressTask progress)
     {
         _colBulk.Insert(Helper.GetDocs(COUNT));
 
         progress.Increment(COUNT);
+
+        return true;
     }
 
-    public void Update(ProgressTask progress)
+    public bool Update(ProgressTask progress)
     {
         foreach (var doc in Helper.GetDocs(COUNT))
         {
             _col.Update(doc);
 
             progress.Increment(1);
+
+            if (Console.KeyAvailable && Console.ReadKey(true).Key == ConsoleKey.Escape) return false;
         }
+
+        return true;
     }
 
-    public void Query(ProgressTask progress)
+    public bool Query(ProgressTask progress)
     {
         for (var i = 1; i <= COUNT; i++)
         {
             _col.FindById(i);
 
             progress.Increment(1);
+
+            if (Console.KeyAvailable && Console.ReadKey(true).Key == ConsoleKey.Escape) return false;
         }
+
+        return true;
     }
 
-    public void Delete(ProgressTask progress)
+    public bool Delete(ProgressTask progress)
     {
         _col.DeleteAll();
 
         progress.Increment(COUNT);
+
+        return true;
     }
 
     public void Dispose()

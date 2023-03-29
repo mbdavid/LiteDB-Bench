@@ -51,6 +51,8 @@
 
     static void AddRow(Table table, string name, Results results, Results other)
     {
+        if (results.Size == 0) return;
+
         table.AddRow(new Text(name),
             AddText(results.Insert, other.Insert),
             AddText(results.Bulk, other.Bulk),
@@ -96,11 +98,14 @@
                     var tQuery = ctx.AddTask("[silver] Query[/]", false, COUNT);
                     var tDelete = ctx.AddTask("[silver] Delete[/]", false, COUNT);
 
-                    RunTask("Insert", tInsert, test.Insert);
-                    RunTask("Bulk", tBulk, test.Bulk);
-                    RunTask("Update", tUpdate, test.Update);
-                    RunTask("Query", tQuery, test.Query);
-                    RunTask("Delete", tDelete, test.Delete);
+                    var result = 
+                        RunTask("Insert", tInsert, test.Insert) &&
+                        RunTask("Bulk", tBulk, test.Bulk) && 
+                        RunTask("Update", tUpdate, test.Update) && 
+                        RunTask("Query", tQuery, test.Query) && 
+                        RunTask("Delete", tDelete, test.Delete);
+
+                    if (result == false) return;
 
                     results.Insert = tInsert.ElapsedTime!.Value;
                     results.Bulk = tBulk.ElapsedTime!.Value;
@@ -110,7 +115,6 @@
                     results.Size = test.FileLength;
 
                 });
-
         }
         finally
         {
@@ -118,14 +122,16 @@
         }
     }
 
-    static void RunTask(string name, ProgressTask progress, Action<ProgressTask> action)
+    static bool RunTask(string name, ProgressTask progress, Func<ProgressTask, bool> action)
     {
         progress.Description($"[lightslateblue] {name}[/]");
         progress.StartTask();
 
-        action(progress);
+        var result = action(progress);
 
         progress.Description($"[silver] {name}[/]");
         progress.StopTask();
+
+        return result;
     }
 }

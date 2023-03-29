@@ -3,9 +3,9 @@
     int FileLength { get; }
 
     void Prepare();
-    void Insert(ProgressTask progress);
-    void Bulk(ProgressTask progress);
-    void Update(ProgressTask progress);
-    void Query(ProgressTask progress);
-    void Delete(ProgressTask progress);
+    bool Insert(ProgressTask progress);
+    bool Bulk(ProgressTask progress);
+    bool Update(ProgressTask progress);
+    bool Query(ProgressTask progress);
+    bool Delete(ProgressTask progress);
 }
