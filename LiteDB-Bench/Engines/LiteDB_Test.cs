@@ -66,6 +66,7 @@
     public void Dispose()
     {
         _db.Dispose();
-        //File.Delete(_filename);
+
+        File.Delete(_filename);
     }
 }

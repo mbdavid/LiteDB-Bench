@@ -15,20 +15,22 @@
 
         COUNT = Convert.ToInt32(args[0]);
 
-        AnsiConsole.Markup($"[bold teal]Embedded Database Performance Benchmark - {COUNT} documents[/]\n");
-        AnsiConsole.Markup($"[bold teal]===========================================================[/]\n\n");
+        AnsiConsole.Clear();
+
+        AnsiConsole.Markup($"[bold teal]Embedded Database Performance Benchmark[/]\n");
+        AnsiConsole.Markup($"[bold teal]=======================================[/]\n\n");
 
         // LiteDB
         var litedbTest = new LiteDB_Test();
         var litedbResult = new Results();
 
-        RunTest("LiteDB", litedbTest, litedbResult);
+        RunTest($"LiteDB ({COUNT:0,0} documents)", litedbTest, litedbResult);
 
         // SQLite
         var sqliteTest = new SQLite_Test();
         var sqliteResult = new Results();
 
-        RunTest("SQLite", sqliteTest, sqliteResult);
+        RunTest($"SQLite ({COUNT:0,0} rows)", sqliteTest, sqliteResult);
 
         var table = new Table()
             .AddColumn("Database")

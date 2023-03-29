@@ -128,6 +128,6 @@
         _db.Close();
         _db.Dispose();
 
-        //File.Delete(_filename);
+        File.Delete(_filename);
     }
 }
