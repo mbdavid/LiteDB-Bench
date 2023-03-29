@@ -45,8 +45,6 @@
         AddRow(table, "SQLite", sqliteResult, litedbResult);
 
         AnsiConsole.Write(table);
-
-        Console.ReadKey();
     }
 
     static void AddRow(Table table, string name, Results results, Results other)
@@ -73,8 +71,8 @@
         {
             test.Prepare();
 
-            AnsiConsole.Markup($"[bold fuchsia]{name}[/]\n");
-            AnsiConsole.Markup($"[bold fuchsia]{"".PadLeft(name.Length, '=')}[/]\n");
+            AnsiConsole.Markup($"[bold darkorange]{name}[/]\n");
+            AnsiConsole.Markup($"[bold darkorange]{"".PadLeft(name.Length, '=')}[/]\n");
 
             AnsiConsole.Progress()
                 .AutoRefresh(true) // Turn off auto refresh
@@ -120,7 +118,7 @@
 
     static void RunTask(string name, ProgressTask progress, Action<ProgressTask> action)
     {
-        progress.Description($"[yellow] {name}[/]");
+        progress.Description($"[lightslateblue] {name}[/]");
         progress.StartTask();
 
         action(progress);
